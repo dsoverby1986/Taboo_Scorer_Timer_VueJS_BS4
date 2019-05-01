@@ -110,6 +110,7 @@
 						this.seconds--;
 					else {
 						clearInterval(this.timer);
+						var _this = this;
 						var context = new AudioContext();
 						var o = context.createOscillator();
 						o.type = 'sawtooth';
@@ -117,7 +118,7 @@
 						o.start();
 						setTimeout(function() {
 							o.stop();
-							this.seconds = 60;
+							_this.seconds = 60;
 							$('#btnTimer').prop('disabled', false);
 						}, 5000);
 					}
