@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Taboo Scorer/Timer</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<style>
+		.container {
+			padding-top: 15px;
+			max-width: 400px;
+		}
+		.btn-primary, .btn-danger {
+			margin-top: 15px;
+		}
+		#timer {
+			padding-top: 15px;
+		}
+	</style>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+</head>
+<body>
+	<div id="app" class="container">
+		<div class="row">
+			<div class="col">
+				<button id="btnTimer" v-on:click="timerStart" class="btn btn-success btn-lg btn-block">Start Timer</button>
+			</div>
+		</div>
+		<div class="row">
+			<div id="timer" class="col text-center">
+				<h3>{{ seconds }}</h3>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col text-center">
+				<div class="row">
+					<div class="col">
+						<label><h3><u>Team A</u></h3></label>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<h4><label>Score:&nbsp;</label><span>{{ scoreA }}</span></h4>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<button v-on:click="adjScore" class="btn btn-primary btn-lg btn-block" data-team="A" data-operation="++">A++</button>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<button v-on:click="adjScore" class="btn btn-danger btn-lg btn-block" data-team="A" data-operation="--">A--</button>
+					</div>
+				</div>
+			</div>
+			<div class="col text-center">
+				<div class="row">
+					<div class="col">
+						<label><h3><u>Team B</u></h3></label>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<h4><label>Score:&nbsp;</label><span>{{scoreB}}</span></h4>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<button v-on:click="adjScore" class="btn btn-primary btn-lg btn-block" data-team="B" data-operation="++">B++</button>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col">
+						<button v-on:click="adjScore" class="btn btn-danger btn-lg btn-block" data-team="B" data-operation="--">B--</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script>
+		new Vue({
+			el: '#app',
+			data: {
+				seconds: 60,
+				scoreA: 0,
+				scoreB: 0,
+				timer: undefined
+			},
+			methods: {
+				adjScore: function(e) {
+					var $btn = $(e.target);
+					var team = $btn.data('team');
+					var operation = $btn.data('operation');
+					if(team === "A")
+						if(operation === "++")
+							this.scoreA++;
+						else
+							this.scoreA--;
+					else
+						if(operation === "++")
+							this.scoreB++;
+						else
+							this.scoreB--;
+				},
+				timeIncrementor: function() {
+					if(this.seconds !== 0)
+						this.seconds--;
+					else {
+						clearInterval(this.timer);
+						var context = new AudioContext();
+						var o = context.createOscillator();
+						o.type = 'sawtooth';
+						o.connect(context.destination);
+						o.start();
+						setTimeout(function() {
+							o.stop();
+							this.seconds = 60;
+							$('#btnTimer').prop('disabled', false);
+						}, 5000);
+					}
+				},
+				timerStart: function(e) {
+					$(e.target).prop('disabled', true);
+					this.timer = setInterval(this.timeIncrementor, 1000);
+				}
+			}
+		});
+	</script>
+</body>
+</html>
