@@ -32,8 +32,8 @@
 		#timer {
 			padding-top: 15px;
 		}
-		.v-spacer-100 {
-		    height: 100px;
+		.v-spacer-45 {
+		    height: 45px;
 		}
 	</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
@@ -42,7 +42,7 @@
 	<div id="app" class="container">
 		<div class="row">
 			<div class="col">
-				<button id="btnTimer" v-on:click="timerStart" class="btn btn-success btn-lg btn-block">Start Timer</button>
+				<button id="btnTimer" v-on:click="timerToggle" class="btn btn-success btn-lg btn-block">{{ timerAction }} Timer</button>
 			</div>
 		</div>
 		<div class="row">
@@ -96,17 +96,22 @@
 				</div>
 			</div>
 		</div>
+        <div class="row">
+            <div class="col pt-5">
+                <button id="btnReset" v-on:click="reset" class="btn btn-warning btn-lg btn-block">Reset</button>
+            </div>
+        </div>
 		<div class="row">
-            		<div class="col">
-                		<div class="v-spacer-100"></div>
-                		<p>
-                    			*Make sure volume is turned up to hear timer buzzer
-                		</p>
-                		<p>
-                    			<a href="https://www.hasbro.com/common/instruct/Taboo(2000).PDF" target="_blank">Official Taboo Rules</a>
-                		</p>
-            		</div>
-        	</div> 
+                <div class="col">
+                    <div class="v-spacer-45"></div>
+                    <p>
+                        *Make sure volume is turned up to hear timer buzzer
+                    </p>
+                    <p>
+                        <a href="https://www.hasbro.com/common/instruct/Taboo(2000).PDF" target="_blank">Official Taboo Rules</a>
+                    </p>
+                </div>
+        </div> 
 	</div>
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -115,6 +120,8 @@
 		new Vue({
 			el: '#app',
 			data: {
+                timerAction: 'Start',
+                timerPaused: false,
 				seconds: 60,
 				scoreA: 0,
 				scoreB: 0,
@@ -138,27 +145,46 @@
 					$btn.blur();
 				},
 				timeIncrementor: function() {
-					if(this.seconds !== 0)
+                    if (!this.timerPaused){
+                        if (this.seconds !== 0)
 						this.seconds--;
-					else {
-						clearInterval(this.timer);
-						var _this = this;
-						var context = new AudioContext();
-						var o = context.createOscillator();
-						o.type = 'sawtooth';
-						o.connect(context.destination);
-						o.start();
-						setTimeout(function() {
-							o.stop();
-							_this.seconds = 60;
-							$('#btnTimer').prop('disabled', false);
-						}, 5000);
-					}
+                        else {
+                            $('#btnTimer').prop('disabled', true);
+                            clearInterval(this.timer);
+                            var _this = this;
+                            var context = new AudioContext();
+                            var o = context.createOscillator();
+                            o.type = 'sawtooth';
+                            o.connect(context.destination);
+                            o.start();
+                            setTimeout(function() {
+                                o.stop();
+                                _this.seconds = 60;
+                                _this.timerAction = 'Start';
+                                _this.timer = undefined;
+                                $('#btnTimer').prop('disabled', false);
+                            }, 5000);
+                        }
+                    }
 				},
-				timerStart: function(e) {
-					$(e.target).prop('disabled', true);
-					this.timer = setInterval(this.timeIncrementor, 1000);
-				}
+				timerToggle: function() {
+					if (!this.timer){
+                        this.timer = setInterval(this.timeIncrementor, 1000);
+                    } else {
+                        this.timerPaused = !this.timerPaused;
+                    }
+                    this.timerAction = this.timerPaused ? 'Start' : 'Paused';
+				},
+                reset: function() {
+                    clearInterval(this.timer);
+                    this.seconds = 60;
+                    this.scoreA = 0;
+                    this.scoreB = 0;
+                    this.timerPaused = false;
+                    this.timerAction = 'Start';
+                    this.timer = undefined;
+                    $('#btnTimer').prop('disabled', false);
+                }
 			}
 		});
 	</script>
